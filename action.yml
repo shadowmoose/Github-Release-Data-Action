@@ -1,0 +1,26 @@
+name: 'Updater Action'
+description: 'Publish updates about release binaries.'
+inputs:
+  token:  # Github authorized Token
+    description: 'An authorized GitHub token.'
+    required: true
+  owner:
+    description: 'The owner of the target project.'
+    required: false
+    default: ""
+  repo:
+    description: 'The target project.'
+    required: false
+    default: ""
+  outFile:
+    description: 'If specified, an output file to save release JSON data.'
+    required: false
+    default: ""
+outputs:
+  latest_release:
+    description: 'The latest release tag.'
+  data_json:
+    description: 'The release data, JSON-encoded.'
+runs:
+  using: 'node12'
+  main: 'index.js'
