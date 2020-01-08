@@ -43,6 +43,7 @@ async function run() {
 
 	core.setOutput("data_json", JSON.stringify(release, null, 2));
 	core.setOutput("latest_release", releaseTag);
+	core.setOutput("is_released", !(release.prerelease || release.draft));
 
 	if (outFile) {
 		const file = path.resolve(outFile);

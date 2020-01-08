@@ -19,5 +19,5 @@ jobs:
       - name: Print the output
         run: |
           echo "Latest tag: ${{ steps.test.outputs.latest_release }}";
-          echo "Release data: ${{ steps.test.outputs.data_json }}";
+          echo "Released: ${{ steps.test.outputs.is_released }}";
           ls -la output

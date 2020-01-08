@@ -16,11 +16,15 @@ inputs:
     description: 'If specified, an output file to save release JSON data.'
     required: false
     default: ""
+
 outputs:
   latest_release:
     description: 'The latest release tag.'
   data_json:
     description: 'The release data, JSON-encoded.'
+  is_released:
+    description: 'Returns "true" if the latest release is a non-prerelease, non-draft.'
+
 runs:
   using: 'node12'
   main: 'index.js'

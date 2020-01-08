@@ -17,11 +17,11 @@ Attaches pre-processed data about each release artifact, including UTC timestamp
 ```
 
 
-Then, later, you may use the outputs like this:
+Then, later, you may use the [outputs](./action.yml) like this:
 
 ```yml
 - name: Get the output time
   run: |
     echo "Latest tag: ${{ steps.release_json.outputs.latest_release }}";
-    echo "Release data: ${{ steps.release_json.outputs.data_json }}";
+    echo "Released: ${{ steps.release_json.outputs.is_released }}";
 ```
