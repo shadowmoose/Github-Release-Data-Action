@@ -3,22 +3,21 @@ on: [push]
 jobs:
   hello_world_job:
     runs-on: ubuntu-latest
-    name: A job to say hello
+    name: Test Run
     steps:
       # To use this repository's private action, you must check out the repository
       - name: Checkout
         uses: actions/checkout@v1
 
-      - name: Hello world action step
+      - name: Launch the local action.
         uses: ./ # Uses an action in the root directory
-        id: hello
+        id: test
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           outFile: './output/test.json'
 
-      # Use the output from the `hello` step
-      - name: Get the output time
+      - name: Print the output
         run: |
-          echo "Latest tag: ${{ steps.hello.outputs.latest_release }}";
-          echo "Release data: ${{ steps.hello.outputs.data_json }}";
+          echo "Latest tag: ${{ steps.test.outputs.latest_release }}";
+          echo "Release data: ${{ steps.test.outputs.data_json }}";
           ls -la output
