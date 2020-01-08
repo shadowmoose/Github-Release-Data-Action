@@ -7,7 +7,7 @@ Attaches pre-processed data about each release artifact, including UTC timestamp
 ## To use:
 ```yml
 - name: Build Release JSON Data
-  uses: ./ # Uses an action in the root directory
+  uses: shadowmoose/Github-Release-Data-Action@1.0.0
   id: release_json
   with:
     token: ${{ secrets.GITHUB_TOKEN }}

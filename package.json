@@ -8,15 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/shadowmoose/Updater-Action.git"
+    "url": "git+https://github.com/shadowmoose/Github-Release-Data-Action"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/shadowmoose/Updater-Action/issues"
+    "url": "https://github.com/shadowmoose/Github-Release-Data-Action/issues"
   },
-  "homepage": "https://github.com/shadowmoose/Updater-Action#readme",
+  "homepage": "https://github.com/shadowmoose/Github-Release-Data-Action",
   "dependencies": {
     "@actions/core": "^1.2.0",
     "@actions/github": "^2.0.0"
