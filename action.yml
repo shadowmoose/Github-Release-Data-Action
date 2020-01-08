@@ -1,4 +1,4 @@
-name: 'Updater Action'
+name: 'Release Attachment Metadata'
 description: 'Publish updates about release binaries.'
 inputs:
   token:  # Github authorized Token
