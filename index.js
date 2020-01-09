@@ -69,17 +69,14 @@ const download = function(url, dest) {
 };
 
 
-const hash = (file, algorithm = 'sha256') => {
-	return new Promise(res => {
-		const fd = fs.createReadStream(file);
-		const hash = crypto.createHash(algorithm);
-		fd.on('end', function() {
-			hash.end();
-			res(hash.digest('hex'));
-		});
-		fd.pipe(hash);
-	})
-};
+function hash(file, algorithm = 'sha256') {
+	return new Promise( res => {
+		const shasum = crypto.createHash(algorithm);
+		const filename = file, s = fs.ReadStream(filename);
+		s.on('data', function (data) {shasum.update(data)});
+		s.on('end', function () {res(shasum.digest('hex'))});
+	});
+}
 
 
 run().catch(err => {
