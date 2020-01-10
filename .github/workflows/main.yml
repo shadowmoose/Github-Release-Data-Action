@@ -22,9 +22,3 @@ jobs:
           echo "Released: ${{ steps.test.outputs.is_released }}";
           ls -la output;
           cat ./output/test.json;
-          cat Test.png;
-
-      - uses: actions/upload-artifact@v1
-        with:
-          name: Test.png
-          path: Test.png
