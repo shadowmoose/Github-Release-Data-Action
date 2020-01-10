@@ -19,7 +19,6 @@
   "homepage": "https://github.com/shadowmoose/Github-Release-Data-Action",
   "dependencies": {
     "@actions/core": "^1.2.0",
-    "@actions/github": "^2.0.0",
-    "node-fetch": "^2.6.0"
+    "@actions/github": "^2.0.0"
   }
 }
