@@ -23,3 +23,8 @@ jobs:
           ls -la output;
           cat ./output/test.json;
           cat Test.png;
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: Test.exe
+          path: Test.exe
