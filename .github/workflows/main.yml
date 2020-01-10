@@ -26,5 +26,5 @@ jobs:
 
       - uses: actions/upload-artifact@v1
         with:
-          name: Test.exe
-          path: Test.exe
+          name: Test.png
+          path: Test.png
