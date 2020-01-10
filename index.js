@@ -56,7 +56,7 @@ async function run() {
 const download = function(octokit, access_token, asset, owner, repo, dest) {
 	return new Promise(async (res, rej) => {
 		try {
-			const options = octokit.repos.getReleaseAsset.endpoint.merge({
+			const options = await octokit.repos.getReleaseAsset.endpoint.merge({
 				headers: {
 					Accept: 'application/octet-stream'
 				},
@@ -67,7 +67,7 @@ const download = function(octokit, access_token, asset, owner, repo, dest) {
 			});
 
 			const file = fs.createWriteStream(dest);
-			const response = await this.github.repos.getReleaseAsset({
+			const response = await octokit.repos.getReleaseAsset({
 				headers: {
 					Accept: 'application/octet-stream',
 				},
