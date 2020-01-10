@@ -23,9 +23,15 @@ async function run() {
 			updatedMS: new Date(a.updated_at).getTime(),
 			updated: Math.floor(new Date(a.updated_at).getTime() / 1000)
 		};
-		core.info(`Checking release asset: ${a.name}`);
+		core.info(`Checking release asset: ${a.name} -> ${url}`);
 
-		await download(url, a.name);
+		const dl = await octokit.repos.getReleaseAsset({
+			owner,
+			repo,
+			asset_id: a.id
+		});
+
+		core.info(`Download Asset: ${JSON.stringify(dl)}`);
 
 		await Promise.all(
 			['sha1', 'sha256', 'md5'].map(async hashType => {
@@ -72,7 +78,8 @@ const download = function(url, dest) {
 function hash(file, algorithm = 'sha256') {
 	return new Promise( res => {
 		const shasum = crypto.createHash(algorithm);
-		const filename = file, s = fs.ReadStream(filename);
+		const filename = file, s = fs.createReadStream(filename);
+		s.setEncoding('UTF-8');
 		s.on('data', function (data) {shasum.update(data)});
 		s.on('end', function () {res(shasum.digest('hex'))});
 	});
