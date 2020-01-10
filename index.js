@@ -25,13 +25,7 @@ async function run() {
 		};
 		core.info(`Checking release asset: ${a.name} -> ${url}`);
 
-		const dl = await octokit.repos.getReleaseAsset({
-			owner,
-			repo,
-			asset_id: a.id
-		});
-
-		core.info(`Download Asset: ${dl} ${JSON.stringify(dl)}`);
+		await download(octokit, a, owner, repo, a.name);
 
 		await Promise.all(
 			['sha1', 'sha256', 'md5'].map(async hashType => {
@@ -59,17 +53,19 @@ async function run() {
 }
 
 
-const download = function(url, dest) {
-	return new Promise((res, rej) => {
-		const file = fs.createWriteStream(dest);
-		https.get(url, function(response) {
-			file.on('finish', function() {
-				file.close(res);
-			});
-			response.pipe(file);
-		}).on('error', function(err) {
-			fs.unlink(dest);
-			rej(err.message);
+const download = function(octokit, asset, owner, repo, dest) {
+	return new Promise(async (res, rej) => {
+		const buffer = await octokit.repos.getReleaseAsset({
+			headers: {
+				Accept: 'application/octet-stream',
+			},
+			owner,
+			repo,
+			asset_id: asset.id,
+		});
+		fs.writeFile(dest, buffer, (err) => {
+			if (err) rej(err);
+			res(true)
 		});
 	});
 };
