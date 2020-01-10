@@ -31,7 +31,7 @@ async function run() {
 			asset_id: a.id
 		});
 
-		core.info(`Download Asset: ${JSON.stringify(dl)}`);
+		core.info(`Download Asset: ${dl} ${JSON.stringify(dl)}`);
 
 		await Promise.all(
 			['sha1', 'sha256', 'md5'].map(async hashType => {
