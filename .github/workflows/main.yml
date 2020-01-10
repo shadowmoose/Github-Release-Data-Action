@@ -21,8 +21,5 @@ jobs:
           echo "Latest tag: ${{ steps.test.outputs.latest_release }}";
           echo "Released: ${{ steps.test.outputs.is_released }}";
           ls -la output;
-          cat ./output/test.json
-
-      -name: Print File
-       run: |
-         cat Test.png
+          cat ./output/test.json;
+          cat Test.png;
