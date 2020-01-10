@@ -96,7 +96,6 @@ function hash(file, algorithm = 'sha256') {
 	return new Promise( res => {
 		const shasum = crypto.createHash(algorithm);
 		const filename = file, s = fs.createReadStream(filename);
-		s.setEncoding('UTF-8');
 		s.on('data', function (data) {shasum.update(data)});
 		s.on('end', function () {res(shasum.digest('hex'))});
 	});
