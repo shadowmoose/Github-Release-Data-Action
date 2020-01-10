@@ -63,9 +63,9 @@ const download = function(token, asset, owner, repo, dest) {
 					Authorization: `token ${token}`
 				},
 			});
-			const dest = fs.createWriteStream(dest);
-			dest.on('finish', res);
-			res.body.pipe(dest);
+			const file = fs.createWriteStream(dest);
+			file.on('finish', res);
+			res.body.pipe(file);
 		} catch (err) {
 			rej(err);
 		}
