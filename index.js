@@ -64,7 +64,7 @@ const download = function(token, asset, owner, repo, dest) {
 				},
 			});
 			const file = fs.createWriteStream(dest);
-			file.on('finish', res);
+			file.on('finish', () => res(true));
 			res.body.pipe(file);
 		} catch (err) {
 			rej(err);
