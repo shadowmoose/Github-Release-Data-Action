@@ -34,7 +34,7 @@ async function run() {
 		);
 
 		a.metadata = ext;
-		core.info(a);
+		core.info(`Processed asset: ${a}`);
 	});
 
 	await Promise.all(proms);
