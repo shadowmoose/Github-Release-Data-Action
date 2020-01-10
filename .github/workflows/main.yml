@@ -22,3 +22,7 @@ jobs:
           echo "Released: ${{ steps.test.outputs.is_released }}";
           ls -la output;
           cat ./output/test.json
+
+      -name: Print File
+       run: |
+         cat Test.png
