@@ -61,11 +61,15 @@ const download = function(token, asset, owner, repo, dest, core) {
 			path: `/repos/${owner}/${repo}/releases/assets/${asset.id}`,
 			headers: {
 				Accept: 'application/octet-stream',
+				'User-Agent': 'GH-Updater-Action-Client',
 				Authorization: `token ${token}`
 			}
 		};
 		https.get(options, function(response) {
 			core.info(`Redirect loc: ${response.headers.location}`);
+			if (response.statusCode !== 200) {
+				rej(`Error: Server responded with code ${response.statusCode} for asset ${asset.name}!`);
+			}
 			file.on('finish', function() {
 				file.close(res);
 			});
