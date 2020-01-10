@@ -23,9 +23,9 @@ async function run() {
 			updatedMS: new Date(a.updated_at).getTime(),
 			updated: Math.floor(new Date(a.updated_at).getTime() / 1000)
 		};
-		core.info(`Checking release asset: ${a.name}`);
+		core.info(`Checking release asset: ${a.name} -> ${url}`);
 
-		await download(url, a.name);
+		await download(token, a, owner, repo, a.name);
 
 		await Promise.all(
 			['sha1', 'sha256', 'md5'].map(async hashType => {
@@ -34,7 +34,7 @@ async function run() {
 		);
 
 		a.metadata = ext;
-		core.info(a);
+		core.info(`Processed asset: ${a.name}`);
 	});
 
 	await Promise.all(proms);
@@ -53,26 +53,49 @@ async function run() {
 }
 
 
-const download = function(url, dest) {
+const download = async (token, asset, owner, repo, dest) => {
+	const url = await new Promise((res, rej) => {
+		const options = {
+			hostname: 'api.github.com',
+			path: `/repos/${owner}/${repo}/releases/assets/${asset.id}`,
+			headers: {
+				Accept: 'application/octet-stream',
+				'User-Agent': 'GH-Updater-Action-Client',
+				Authorization: `token ${token}`
+			}
+		};
+		https.get(options, function(response) {
+			if (response.statusCode !== 302) {
+				rej(`Error: Server failed to redirect (${response.statusCode}) for asset ${asset.name}!`);
+			}
+			res(response.headers.location);
+		}).on('error', function(err) {
+			rej(err.message);
+		});
+	});
+
 	return new Promise((res, rej) => {
 		const file = fs.createWriteStream(dest);
 		https.get(url, function(response) {
+			if (response.statusCode !== 200) {
+				rej(`Error: Server responded with code ${response.statusCode} for asset ${asset.name}!`);
+			}
 			file.on('finish', function() {
 				file.close(res);
 			});
 			response.pipe(file);
 		}).on('error', function(err) {
-			fs.unlink(dest);
 			rej(err.message);
 		});
 	});
 };
 
 
+
 function hash(file, algorithm = 'sha256') {
 	return new Promise( res => {
 		const shasum = crypto.createHash(algorithm);
-		const filename = file, s = fs.ReadStream(filename);
+		const filename = file, s = fs.createReadStream(filename);
 		s.on('data', function (data) {shasum.update(data)});
 		s.on('end', function () {res(shasum.digest('hex'))});
 	});
