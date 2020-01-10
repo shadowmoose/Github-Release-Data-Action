@@ -56,7 +56,7 @@ async function run() {
 const download = function(token, asset, owner, repo, dest) {
 	return new Promise(async (res, rej) => {
 		try {
-			const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/assets/${asset.id}`, {
+			const req = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/assets/${asset.id}`, {
 				method: 'GET',
 				headers: {
 					Accept: 'application/octet-stream',
@@ -64,8 +64,8 @@ const download = function(token, asset, owner, repo, dest) {
 				},
 			});
 			const file = fs.createWriteStream(dest);
-			file.on('finish', () => res(true));
-			res.body.pipe(file);
+			file.on('finish', res);
+			req.body.pipe(file);
 		} catch (err) {
 			rej(err);
 		}
