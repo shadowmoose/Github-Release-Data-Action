@@ -1,6 +1,6 @@
 const github = require('@actions/github');
 const core = require('@actions/core');
-const fetch = require('node-fetch');
+const https = require('https');
 const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
@@ -25,7 +25,7 @@ async function run() {
 		};
 		core.info(`Checking release asset: ${a.name} -> ${url}`);
 
-		await download(token, a, owner, repo, a.name);
+		await download(token, a, owner, repo, a.name, core);
 
 		await Promise.all(
 			['sha1', 'sha256', 'md5'].map(async hashType => {
@@ -53,24 +53,29 @@ async function run() {
 }
 
 
-const download = function(token, asset, owner, repo, dest) {
-	return new Promise(async (res, rej) => {
-		try {
-			const req = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/assets/${asset.id}`, {
-				method: 'GET',
-				headers: {
-					Accept: 'application/octet-stream',
-					Authorization: `token ${token}`
-				},
+const download = function(token, asset, owner, repo, dest, core) {
+	return new Promise((res, rej) => {
+		const file = fs.createWriteStream(dest);
+		const options = {
+			hostname: 'api.github.com',
+			path: `/repos/${owner}/${repo}/releases/assets/${asset.id}`,
+			headers: {
+				Accept: 'application/octet-stream',
+				Authorization: `token ${token}`
+			}
+		};
+		https.get(options, function(response) {
+			core.info(`Redirect loc: ${response.headers.location}`);
+			file.on('finish', function() {
+				file.close(res);
 			});
-			const file = fs.createWriteStream(dest);
-			file.on('finish', res);
-			req.body.pipe(file);
-		} catch (err) {
-			rej(err);
-		}
+			response.pipe(file);
+		}).on('error', function(err) {
+			rej(err.message);
+		});
 	});
 };
+
 
 
 function hash(file, algorithm = 'sha256') {
