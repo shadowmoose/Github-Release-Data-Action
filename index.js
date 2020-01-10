@@ -4,7 +4,6 @@ const https = require('https');
 const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
-const AdmZip = require('adm-zip');
 
 
 async function run() {
@@ -75,8 +74,8 @@ const download = async (token, asset, owner, repo, dest, core) => {
 		});
 	});
 
-	await new Promise((res, rej) => {
-		const file = fs.createWriteStream(dest+'.zip');
+	return new Promise((res, rej) => {
+		const file = fs.createWriteStream(dest);
 		https.get(url, function(response) {
 			if (response.statusCode !== 200) {
 				rej(`Error: Server responded with code ${response.statusCode} for asset ${asset.name}!`);
@@ -89,9 +88,6 @@ const download = async (token, asset, owner, repo, dest, core) => {
 			rej(err.message);
 		});
 	});
-
-	const zip = new AdmZip(dest+'.zip');
-	core.info(JSON.stringify(zip.getEntries()));
 };
 
 
