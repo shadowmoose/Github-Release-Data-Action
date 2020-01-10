@@ -53,9 +53,8 @@ async function run() {
 }
 
 
-const download = function(token, asset, owner, repo, dest, core) {
-	return new Promise((res, rej) => {
-		const file = fs.createWriteStream(dest);
+const download = async (token, asset, owner, repo, dest, core) => {
+	const url = await new Promise((res, rej) => {
 		const options = {
 			hostname: 'api.github.com',
 			path: `/repos/${owner}/${repo}/releases/assets/${asset.id}`,
@@ -66,7 +65,18 @@ const download = function(token, asset, owner, repo, dest, core) {
 			}
 		};
 		https.get(options, function(response) {
-			core.info(`Redirect loc: ${response.headers.location}`);
+			if (response.statusCode !== 302) {
+				rej(`Error: Server failed to redirect (${response.statusCode}) for asset ${asset.name}!`);
+			}
+			res(response.headers.location);
+		}).on('error', function(err) {
+			rej(err.message);
+		});
+	});
+
+	return new Promise((res, rej) => {
+		const file = fs.createWriteStream(dest);
+		https.get(url, function(response) {
 			if (response.statusCode !== 200) {
 				rej(`Error: Server responded with code ${response.statusCode} for asset ${asset.name}!`);
 			}
