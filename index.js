@@ -1,6 +1,6 @@
 const github = require('@actions/github');
 const core = require('@actions/core');
-const https = require('https');
+const fetch = require('node-fetch');
 const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
@@ -25,7 +25,7 @@ async function run() {
 		};
 		core.info(`Checking release asset: ${a.name} -> ${url}`);
 
-		await download(octokit, token, a, owner, repo, a.name);
+		await download(token, a, owner, repo, a.name);
 
 		await Promise.all(
 			['sha1', 'sha256', 'md5'].map(async hashType => {
@@ -53,31 +53,19 @@ async function run() {
 }
 
 
-const download = function(octokit, access_token, asset, owner, repo, dest) {
+const download = function(token, asset, owner, repo, dest) {
 	return new Promise(async (res, rej) => {
 		try {
-			const options = await octokit.repos.getReleaseAsset.endpoint.merge({
-				headers: {
-					Accept: 'application/octet-stream'
-				},
-				owner,
-				repo,
-				asset_id: asset.id,
-				access_token
-			});
-
-			const file = fs.createWriteStream(dest);
-			const response = await octokit.repos.getReleaseAsset({
+			const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/assets/${asset.id}`, {
+				method: 'GET',
 				headers: {
 					Accept: 'application/octet-stream',
+					Authorization: `token ${token}`
 				},
-				owner,
-				repo,
-				asset_id: asset.id,
 			});
-			file.write(response.data);
-			file.end();
-			res(true);
+			const dest = fs.createWriteStream(dest);
+			dest.on('finish', res);
+			res.body.pipe(dest);
 		} catch (err) {
 			rej(err);
 		}
