@@ -25,7 +25,7 @@ async function run() {
 		};
 		core.info(`Checking release asset: ${a.name} -> ${url}`);
 
-		await download(token, a, owner, repo, a.name, core);
+		await download(token, a, owner, repo, a.name);
 
 		await Promise.all(
 			['sha1', 'sha256', 'md5'].map(async hashType => {
@@ -53,7 +53,7 @@ async function run() {
 }
 
 
-const download = async (token, asset, owner, repo, dest, core) => {
+const download = async (token, asset, owner, repo, dest) => {
 	const url = await new Promise((res, rej) => {
 		const options = {
 			hostname: 'api.github.com',
