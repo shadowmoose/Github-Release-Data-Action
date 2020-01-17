@@ -27,13 +27,18 @@ async function run() {
 
 		await download(token, a, owner, repo, a.name);
 
-		await Promise.all(
+		const hashes = await Promise.all(
 			['sha1', 'sha256', 'md5'].map(async hashType => {
-				ext[hashType] = await hash(a.name, hashType);
+				return [hashType, await hash(a.name, hashType)];
 			})
 		);
 
+		for (const h of hashes) {
+			ext[h[0]] = h[1]  // Assign in this way, to preserve key order in output JSON.
+		}
+
 		a.metadata = ext;
+		a.download_count = '?';  // This often changes, so preserve a constant value instead.
 		core.info(`Processed asset: ${a.name}`);
 	});
 
