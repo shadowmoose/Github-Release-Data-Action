@@ -13,9 +13,21 @@ inputs:
     required: false
     default: ""
   outFile:
-    description: 'If specified, an output file to save release JSON data.'
+    description: 'The name of a file to save release JSON data.'
+    required: false
+    default: "release-history.json"
+  outBranch:
+    description: 'The branch name to push the generated file into'
+    required: false
+    default: "release-data"
+  releaseTag:
+    description: 'Optionally pass a specific release tag, instead of latest.'
     required: false
     default: ""
+  maxReleases:
+    description: 'The amount of historic releases that should be tracked'
+    required: false
+    default: "20"
 
 outputs:
   latest_release:

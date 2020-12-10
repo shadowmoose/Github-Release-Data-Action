@@ -1,18 +1,34 @@
 const github = require('@actions/github');
 const core = require('@actions/core');
+const exec = require('@actions/exec');
 const https = require('https');
 const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
 
 
+const token = core.getInput('token');
+const userReleaseTag = core.getInput('releaseTag').trim();
+const owner = core.getInput('owner') || github.context.payload.repository.owner.name;
+const repo = core.getInput('repo') || github.context.payload.repository.name;
+const outFile = core.getInput('outFile').replace(/^[./]+/gmi, '');
+const branch = core.getInput('outBranch') || null;
+const maxReleases = parseInt(core.getInput('madReleases'));
+const octokit = new github.GitHub(token);
+
+const oldDir = path.resolve(process.cwd());
+const newDir = path.resolve('../blank-repo');
+
+
 async function run() {
-	const token = core.getInput('token');
-	const owner = core.getInput('owner') || github.context.payload.repository.owner.name;
-	const repo = core.getInput('repo') || github.context.payload.repository.name;
-	const outFile = core.getInput('outFile') || null;
-	const octokit = new github.GitHub(token);
-	const release = (await octokit.repos.getLatestRelease({owner, repo})).data;
+	const lRes = userReleaseTag ? await octokit.repos.getReleaseByTag({
+		owner, repo, tag: userReleaseTag
+	})  : await octokit.repos.getLatestRelease({owner, repo});
+	if (!lRes) {
+		core.warning('No valid release could be located!');
+		process.exit(1);
+	}
+	const release = lRes.data;
 	const releaseTag = release.tag_name;
 
 	core.info(`Latest Release tag: ${releaseTag}`);
@@ -38,7 +54,7 @@ async function run() {
 		}
 
 		a.metadata = ext;
-		a.download_count = '?';  // This often changes, so preserve a constant value instead.
+		delete a.download_count;  // This often changes, so preserve a constant value instead.
 		core.info(`Processed asset: ${a.name}`);
 	});
 
@@ -48,15 +64,60 @@ async function run() {
 
 	core.setOutput("data_json", JSON.stringify(release, null, 2));
 	core.setOutput("latest_release", releaseTag);
-	core.setOutput("is_released", !(release.prerelease || release.draft));
+	core.setOutput("is_released", `${!(release.prerelease || release.draft)}`);
 
-	if (outFile) {
-		const file = path.resolve(outFile);
-		fs.mkdirSync(path.dirname(file), { recursive: true });
-		fs.writeFileSync(file, JSON.stringify(release, null, 2));
+	// Initialize a new Git Repo:
+	await exec.exec('git', ['init']);
+	await exec.exec('git', ['remote', 'add', 'origin', `https://${owner}:${token}@github.com/${owner}/${repo}.git`]);
+	await exec.exec('git', ['config', 'user.email', 'gh-release-bot@github.com']);
+	await exec.exec('git', ['config', 'user.name', 'gh-release-bot']);
+	await exec.exec('git', ['fetch', 'origin', branch]).catch(_err=>{});
+
+	// Either checkout an existing branch, or build a brand new orphan branch:
+	try {
+		await exec.exec('git', ['checkout', branch]);
+		core.info('Pulled existing git branch.')
+	} catch(err) {
+		core.warning(`Data Branch "${branch}" does not exist! Creating new orphan...`);
+		await exec.exec('git', ['checkout', '--orphan' , branch]);
+		core.info("Created orphan branch");
 	}
-}
 
+	// Load all files, as they are on the server:
+	await exec.exec('git', ['reset', '--hard', `origin/${branch}`]).catch(_err => {});
+
+	// Prepare the output data:
+	let data = [];
+	if (fs.existsSync(outFile)) {
+		// Load from existing data file, if one exists:
+		data = JSON.parse(fs.readFileSync(outFile).toString());
+		core.info(`Existing release count: ${data.length}`);
+	}
+	data = data.filter(d => d.tag_name !== release.tag_name);
+	data.unshift(release);
+
+	if (data.length > maxReleases) {
+		data = data.slice(0, maxReleases);
+	}
+	core.info(`New release count: ${data.length}`);
+
+	// Write file:
+	const json = JSON.stringify(data, null, 2);
+	fs.mkdirSync(path.dirname(outFile), {recursive: true});
+	fs.writeFileSync(outFile, json);
+
+	// Push (only this specific data file) back to GH, if there were changes:
+	await exec.exec('git', ['reset']);
+	await exec.exec('git', ['add', outFile]);
+	await exec.exec('git', ['diff' ,'--exit-code', '--cached', '--quiet']).then(() => {
+		core.info('No changes. Finished!');
+	}).catch( async() => {
+		core.info('New data. Building commit...')
+		await exec.exec('git', ['commit', '-m', `Auto-generated on ${new Date().toLocaleDateString()} for release ${releaseTag}`]);
+		await exec.exec('git', ['push', 'origin', branch]);
+		core.info('Pushed changes!');
+	});
+}
 
 const download = async (token, asset, owner, repo, dest) => {
 	const url = await new Promise((res, rej) => {
@@ -106,7 +167,14 @@ function hash(file, algorithm = 'sha256') {
 	});
 }
 
+// Jump into new directory, to isolate from existing project.
+fs.mkdirSync(newDir, {recursive: true});
+process.chdir(newDir);
 
+// Run, then cleanup the temp directory:
 run().catch(err => {
 	core.setFailed(`${err}`);
+}).finally(() => {
+	process.chdir(oldDir);
+	fs.rmdirSync(newDir, {recursive: true});
 });
