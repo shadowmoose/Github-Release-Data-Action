@@ -27,7 +27,7 @@ inputs:
   maxReleases:
     description: 'The amount of historic releases that should be tracked'
     required: false
-    default: "20"
+    default: "10"
 
 outputs:
   latest_release:
