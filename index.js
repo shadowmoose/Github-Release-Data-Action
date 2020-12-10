@@ -96,7 +96,7 @@ async function run() {
 	data = data.filter(d => d.tag_name !== release.tag_name);
 	data.unshift(release);
 
-	data = data.sort((d1, d2) => d1.published_utc - d2.published_utc)
+	data = data.sort((d1, d2) => d2.published_utc - d1.published_utc)
 
 	if (data.length > maxReleases) {
 		data = data.slice(0, maxReleases);
