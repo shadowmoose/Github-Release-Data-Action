@@ -25,7 +25,7 @@ Notable improvements over the GitHub API:
     outBranch: release-metadata  # Optional.
 ```
 
-*Not all options are included above. Check out [the options](./action.yml) for more optional customization, including setting size limits.*
+*Not all options are included above. Check out [the options](./action.yml) for more optional customization, including setting size limits and custom release tags.*
 
 
 ## Sample Output:
@@ -64,7 +64,7 @@ Once run, this Action will generate a new branch names something like "release-d
       "name": "RMD-macOS",
       "label": "",
       "uploader": {
-        // Upload data...
+        // Uploader user data...
       },
       "content_type": "binary/octet-stream",
       "state": "uploaded",
