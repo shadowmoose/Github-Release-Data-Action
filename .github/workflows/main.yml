@@ -14,11 +14,9 @@ jobs:
         id: test
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          outFile: './output/test.json'
+          outFile: 'test.json'
 
       - name: Print the output
         run: |
           echo "Latest tag: ${{ steps.test.outputs.latest_release }}";
           echo "Released: ${{ steps.test.outputs.is_released }}";
-          ls -la output;
-          cat ./output/test.json;
